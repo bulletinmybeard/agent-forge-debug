@@ -5,7 +5,12 @@
   "description": "Native macOS Session inspector for AgentForge.",
   "type": "module",
   "license": "MIT",
-  "author": "AgentForge Debug authors",
+  "author": "Robin Schulz",
+  "homepage": "https://rschu.me/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bulletinmybeard/agent-forge-debug.git"
+  },
   "engines": {
     "node": ">=20"
   },
