@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Vite
+dist/
+
+# Tauri / Rust
+src-tauri/target/
+src-tauri/gen/
+**/*.rs.bk
+
+# Override global excludesFile `/docs/` so this repo can track docs/
+!/docs/
+!/docs/**

@@ -1,0 +1,154 @@
+{
+  "session": {
+    "id": "11111111-2222-3333-4444-555555555555",
+    "title": "List files in the archive folder",
+    "profile": "files",
+    "model": "example-model",
+    "provider_override": null,
+    "source": "web",
+    "message_count": 5,
+    "prompt_tokens": 1200,
+    "completion_tokens": 340,
+    "total_tokens": 1540,
+    "created_at": "2026-01-15T10:00:00.000000",
+    "updated_at": "2026-01-15T10:02:00.000000"
+  },
+  "messages": [
+    {
+      "id": 1,
+      "session_id": "11111111-2222-3333-4444-555555555555",
+      "role": "user",
+      "type": "query",
+      "content": "List files in the archive folder and write a short count summary to ~/Downloads.",
+      "metadata": {
+        "type": "query",
+        "text": "List files in the archive folder and write a short count summary to ~/Downloads.",
+        "mode": "chat"
+      },
+      "tool_calls": null,
+      "sequence": 1,
+      "is_incognito": false,
+      "is_volatile": false,
+      "created_at": "2026-01-15T10:00:00.100000"
+    },
+    {
+      "id": 2,
+      "session_id": "11111111-2222-3333-4444-555555555555",
+      "role": "assistant",
+      "type": "config",
+      "content": null,
+      "metadata": {
+        "type": "agent.config",
+        "profile": "files",
+        "model": "example-model",
+        "provider": "local",
+        "mode": "chat",
+        "session_id": "11111111-2222-3333-4444-555555555555"
+      },
+      "tool_calls": null,
+      "sequence": 2,
+      "is_incognito": false,
+      "is_volatile": false,
+      "created_at": "2026-01-15T10:00:00.200000"
+    },
+    {
+      "id": 3,
+      "session_id": "11111111-2222-3333-4444-555555555555",
+      "role": "assistant",
+      "type": "result",
+      "content": "Done. archive/ has 12 files and 3 folders. Summary saved to ~/Downloads/archive-listing.md.",
+      "metadata": {
+        "type": "agent.result",
+        "text": "Done. archive/ has 12 files and 3 folders. Summary saved to ~/Downloads/archive-listing.md.",
+        "elapsed": 4.2
+      },
+      "tool_calls": [
+        {
+          "name": "files_list",
+          "args": {
+            "path": "archive"
+          },
+          "result": "12 files, 3 folders"
+        },
+        {
+          "name": "write_file",
+          "args": {
+            "path": "/Users/john/Downloads/archive-listing.md",
+            "content": "# Archive listing\n\n- files: 12\n- folders: 3\n"
+          },
+          "result": "Wrote 48 chars to /Users/john/Downloads/archive-listing.md"
+        }
+      ],
+      "sequence": 3,
+      "is_incognito": false,
+      "is_volatile": false,
+      "created_at": "2026-01-15T10:02:00.000000"
+    }
+  ],
+  "messages_error": null,
+  "audit_tools": [
+    {
+      "tool_name": "files_list",
+      "status": "ok",
+      "duration_ms": 120,
+      "timestamp": "2026-01-15T10:00:01.000000",
+      "args_json": "{\"path\":\"archive\"}",
+      "result_preview": "12 files, 3 folders"
+    },
+    {
+      "tool_name": "write_file",
+      "status": "ok",
+      "duration_ms": 40,
+      "timestamp": "2026-01-15T10:00:02.000000",
+      "args_json": "{\"path\":\"/Users/john/Downloads/archive-listing.md\"}",
+      "result_preview": "Wrote 48 chars"
+    }
+  ],
+  "audit_runs": [
+    {
+      "event": "run.start",
+      "timestamp": "2026-01-15T10:00:00.000000",
+      "mode": "chat",
+      "model": "example-model",
+      "source": "web"
+    },
+    {
+      "event": "run.end",
+      "timestamp": "2026-01-15T10:02:00.000000",
+      "status": "ok",
+      "duration_ms": 4200
+    }
+  ],
+  "audit_error": null,
+  "logs": [
+    {
+      "ts_ns": "1736935200100000000",
+      "line": "INFO agent job started session=11111111-2222-3333-4444-555555555555 mode=chat",
+      "labels": {
+        "host": "worker-1",
+        "job": "agentforge-worker",
+        "container": "agentforge-worker-1"
+      }
+    },
+    {
+      "ts_ns": "1736935201100000000",
+      "line": "WARN files_list timed out once; retrying path=archive",
+      "labels": {
+        "host": "worker-1",
+        "job": "agentforge-worker",
+        "container": "agentforge-worker-1"
+      }
+    },
+    {
+      "ts_ns": "1736935320000000000",
+      "line": "10.0.0.2 - - [15/Jan/2026:10:02:00 +0000] \"GET /api/sessions?limit=100&source=web HTTP/1.1\" 200 1200 \"https://agentforge.example.com/chat/11111111-2222-3333-4444-555555555555\" \"Mozilla/5.0\" \"203.0.113.10\"",
+      "labels": {
+        "host": "web-1",
+        "job": "agentforge-web",
+        "container": "agentforge-web-1"
+      }
+    }
+  ],
+  "logs_error": null,
+  "truncated": false
+}

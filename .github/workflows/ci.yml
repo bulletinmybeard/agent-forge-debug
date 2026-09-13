@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint, format & types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Biome check
+        run: npx biome ci .
+
+      - name: Typecheck
+        run: npm run typecheck
+
+  test:
+    name: Test (node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # `npm test` uses `--experimental-strip-types` (Node 22+)
+        node-version: ["22"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+  build:
+    name: Build frontend (node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["20", "22"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Verify dist output
+        run: |
+          test -f dist/index.html || { echo "missing dist/index.html"; exit 1; }
+          ls -la dist/
+
+      - name: Upload build artifact
+        if: matrix.node-version == '20'
+        uses: actions/upload-artifact@v7
+        with:
+          name: agent-forge-debug-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+
+  rust:
+    name: Cargo check
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Cargo check
+        run: cargo check --manifest-path src-tauri/Cargo.toml
+
+  ci-summary:
+    name: CI Summary
+    needs: [lint, test, build, rust]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## CI Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Job | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Lint, format & types | ${{ needs.lint.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Test | ${{ needs.test.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build frontend | ${{ needs.build.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Cargo check | ${{ needs.rust.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ needs.lint.result }}" = "success" ] \
+            && [ "${{ needs.test.result }}" = "success" ] \
+            && [ "${{ needs.build.result }}" = "success" ] \
+            && [ "${{ needs.rust.result }}" = "success" ]; then
+            echo "All CI checks passed." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Some CI checks failed. See the jobs above." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi

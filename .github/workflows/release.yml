@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Git tag to release (e.g. v0.1.0)"
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag name
+        id: tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="$INPUT_TAG"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "name=$TAG" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+
+      - name: Extract version
+        id: version
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          VERSION="${TAG#v}"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "$TAG" ]; then
+            echo "Tag must look like vX.Y.Z (got: $TAG)" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches package versions
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          PKG="$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")"
+          TAURI="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
+          CARGO="$(sed -n 's/^version = "\(.*\)"/\1/p' src-tauri/Cargo.toml | head -1)"
+          echo "tag version:          $VERSION"
+          echo "package.json:         $PKG"
+          echo "tauri.conf.json:      $TAURI"
+          echo "src-tauri/Cargo.toml: $CARGO"
+          if [ "$VERSION" != "$PKG" ] || [ "$VERSION" != "$TAURI" ] || [ "$VERSION" != "$CARGO" ]; then
+            echo "Tag v${VERSION} does not match package.json / tauri.conf.json / Cargo.toml" >&2
+            exit 1
+          fi
+
+      - name: Generate release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Flag-based extraction: print the lines between "## [VERSION]" and the
+          # next "## [" header, excluding both. VERSION is passed to awk as a -v
+          # data variable (not spliced into the program).
+          CHANGELOG_SECTION=""
+          if [ -f CHANGELOG.md ]; then
+            CHANGELOG_SECTION=$(awk -v hdr="## [${VERSION}]" 'index($0, hdr) == 1 {found=1; next} /^## \[/{found=0} found' CHANGELOG.md || echo "")
+          fi
+          echo "DEBUG: extracted changelog length: ${#CHANGELOG_SECTION}"
+
+          if [ -n "$CHANGELOG_SECTION" ] && [ "${#CHANGELOG_SECTION}" -gt 10 ]; then
+            {
+              echo "## What's Changed"
+              echo ""
+              printf '%s\n' "$CHANGELOG_SECTION"
+              echo ""
+              echo "**Full changelog**: https://github.com/${REPO}/blob/master/CHANGELOG.md"
+            } > release_notes.md
+          else
+            {
+              echo "## Release ${VERSION}"
+              echo ""
+              echo "See the full changelog: https://github.com/${REPO}/blob/master/CHANGELOG.md"
+            } > release_notes.md
+          fi
+
+          echo "DEBUG: final release notes:"
+          cat release_notes.md
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: Release v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(steps.tag.outputs.name, 'alpha') || contains(steps.tag.outputs.name, 'beta') || contains(steps.tag.outputs.name, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,37 @@
+{
+  "name": "agent-forge-debug",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Native macOS Session inspector for AgentForge.",
+  "type": "module",
+  "license": "MIT",
+  "author": "AgentForge Debug authors",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/lib/*.test.ts",
+    "test:sessions": "node --experimental-strip-types --test src/lib/sessions.test.ts",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.2",
+    "@tauri-apps/cli": "^2.11.4",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "typescript": "~6.0.3",
+    "vite": "^8.1.3"
+  }
+}
