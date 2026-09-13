@@ -6,7 +6,7 @@
   "type": "module",
   "license": "MIT",
   "author": "Robin Schulz",
-  "homepage": "https://rschu.me/",
+  "homepage": "https://rschu.me",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bulletinmybeard/agent-forge-debug.git"
