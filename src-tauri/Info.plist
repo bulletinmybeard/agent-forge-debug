@@ -2,8 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Required on macOS 15+ so the Local Network permission prompt can appear. -->
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>AgentForge Debug needs local network access to reach AgentForge on your LAN.</string>
+	<!-- Empty Bonjour list still helps some macOS versions associate the privacy key. -->
 	<key>NSBonjourServices</key>
 	<array/>
 </dict>
