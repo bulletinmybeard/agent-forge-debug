@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-29
+
+### Fixed
+
+- macOS Local Network permission surviving rebuilds: `scripts/build-app.sh` codesigns `/Applications/AgentForge Debug.app` with the Apple Development identity (`com.agentforge.debug`) so the grant is not tied to a per-build ad-hoc cdhash
+- `Info.plist`: `NSLocalNetworkUsageDescription` and `NSBonjourServices` so the Local Network can appear on macOS 15+
+
 ## [0.1.0] - 2026-09-13
 
 First release of the native macOS inspector for [AgentForge](https://github.com/bulletinmybeard/agent-forge).

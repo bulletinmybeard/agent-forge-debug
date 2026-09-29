@@ -6,8 +6,9 @@
 #   1. npm run build        Build the Vite frontend
 #   2. npm run tauri build  Compile the Rust release binary + bundle the .app
 #   3. Copy the bundled .app to /Applications (replacing any existing)
+#   4. Codesign with Apple Development so Local Network permission sticks
 #
-# The build is unsigned. On first launch clear the quarantine flag:
+# On first launch clear the quarantine flag:
 #   xattr -dr com.apple.quarantine "/Applications/AgentForge Debug.app"
 #
 # Writing to /Applications may require admin rights:
@@ -41,10 +42,22 @@ if [ ! -d "${BUNDLE_APP}" ]; then
     exit 1
 fi
 
-echo -e "${YELLOW}[3/3]${NC} installing to ${DEST_APP}"
+echo -e "${YELLOW}[3/4]${NC} installing to ${DEST_APP}"
 mkdir -p "${DEST_DIR}"
 rm -rf "${DEST_APP}"
 cp -R "${BUNDLE_APP}" "${DEST_APP}"
+
+# Linker ad-hoc signatures use a per-build cdhash. macOS Local Network
+# permission is stored against that hash, so every rebuild is a new app
+# and the Privacy toggle does not apply. Sign with the Apple Development
+# identity so the grant sticks to com.agentforge.debug.
+SIGN_ID="$(security find-identity -v -p codesigning | sed -n 's/.*"\(Apple Development:[^"]*\)".*/\1/p' | head -1)"
+if [ -z "${SIGN_ID}" ]; then
+    echo -e "${RED}[error]${NC} no Apple Development codesigning identity in the login keychain"
+    exit 1
+fi
+echo -e "${YELLOW}[4/4]${NC} signing with ${SIGN_ID}"
+codesign --force --sign "${SIGN_ID}" --identifier "com.agentforge.debug" "${DEST_APP}"
 
 echo -e "${GREEN}[OK]${NC} installed ${APP_NAME}"
 echo "     source: ${BUNDLE_APP}"
