@@ -1,6 +1,6 @@
 [package]
 name = "agent-forge-debug"
-version = "0.1.0"
+version = "0.2.0"
 description = "Native macOS Session inspector for AgentForge."
 authors = ["AgentForge Debug authors"]
 edition = "2021"
