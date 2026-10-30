@@ -1,6 +1,91 @@
+import { getVersion } from "@tauri-apps/api/app";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useState } from "react";
+import { compareRelease, formatVersion, pickLatestRelease } from "../lib/release";
 import { filterSessions, sessionLabel, uniqueSources } from "../lib/sessions";
 import type { SessionSummary } from "../lib/types";
+
+const RELEASES_URL = "https://api.github.com/repos/bulletinmybeard/agent-forge-debug/releases";
+
+type RemoteRelease = {
+  tag: string;
+  url: string;
+};
+
+function ReleaseBadge() {
+  const [local, setLocal] = useState("");
+  const [remote, setRemote] = useState<RemoteRelease | null>(null);
+  const [matched, setMatched] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      let version = "";
+      try {
+        version = await getVersion();
+      } catch {
+        return;
+      }
+      if (cancelled || !version.trim()) {
+        return;
+      }
+      setLocal(version);
+      try {
+        const response = await fetch(RELEASES_URL, {
+          headers: { Accept: "application/vnd.github+json" },
+        });
+        if (!response.ok) {
+          return;
+        }
+        const latest = pickLatestRelease(await response.json());
+        if (!latest || cancelled) {
+          return;
+        }
+        const relation = compareRelease(version, latest.tag_name);
+        if (relation === "equal") {
+          setMatched(true);
+          return;
+        }
+        if (relation === "behind") {
+          setRemote({ tag: latest.tag_name, url: latest.html_url });
+        }
+      } catch {
+        // keep the plain local label
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!local) {
+    return null;
+  }
+  const label = formatVersion(local);
+  if (matched) {
+    return <span className="release release--current">{label}</span>;
+  }
+  if (remote) {
+    return (
+      <span className="release">
+        <span className="release--local">{label}</span>
+        <span className="release__sep">&gt;</span>
+        <a
+          className="release--remote"
+          href={remote.url}
+          rel="noreferrer"
+          onClick={(event) => {
+            event.preventDefault();
+            void openUrl(remote.url).catch(() => undefined);
+          }}
+        >
+          {formatVersion(remote.tag)}
+        </a>
+      </span>
+    );
+  }
+  return <span className="release">{label}</span>;
+}
 
 type Props = {
   sessions: SessionSummary[];
@@ -31,6 +116,7 @@ export function Picker({ sessions, error, onOpen, onSettings, onReload }: Props)
   return (
     <div className="picker">
       <header className="chrome chrome--end">
+        <ReleaseBadge />
         <button type="button" className="btn" onClick={onReload}>
           Reload
         </button>

@@ -65,6 +65,36 @@ select {
   justify-content: flex-end;
 }
 
+.release {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--mail-text);
+}
+
+.release--current {
+  color: #ffffff;
+}
+
+.release--local {
+  color: #ff5c5c;
+}
+
+.release__sep {
+  color: var(--mail-text-muted);
+}
+
+.release--remote {
+  color: #3dd68c;
+  text-decoration: none;
+}
+
+.release--remote:hover {
+  text-decoration: underline;
+}
+
 .chrome__title {
   display: flex;
   flex-direction: column;
