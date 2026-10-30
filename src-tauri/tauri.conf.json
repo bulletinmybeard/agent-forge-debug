@@ -27,7 +27,7 @@
     "security": {
       "csp": {
         "default-src": "'self'",
-        "connect-src": "ipc: http://ipc.localhost https://ipc.localhost ws: wss:",
+        "connect-src": "ipc: http://ipc.localhost https://ipc.localhost ws: wss: https://api.github.com",
         "img-src": "'self' data:",
         "style-src": "'self' 'unsafe-inline'",
         "script-src": "'self'",
@@ -39,7 +39,7 @@
       },
       "devCsp": {
         "default-src": "'self' http://localhost:1420",
-        "connect-src": "ipc: http://ipc.localhost https://ipc.localhost ws: wss: http://localhost:1420 ws://localhost:1421 http://localhost:1421",
+        "connect-src": "ipc: http://ipc.localhost https://ipc.localhost ws: wss: http://localhost:1420 ws://localhost:1421 http://localhost:1421 https://api.github.com",
         "img-src": "'self' data: http://localhost:1420",
         "style-src": "'self' 'unsafe-inline' http://localhost:1420",
         "script-src": "'self' 'unsafe-inline' 'unsafe-eval' http://localhost:1420",

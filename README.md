@@ -9,6 +9,7 @@
 [![Tauri](https://img.shields.io/badge/Tauri-2-24c8db.svg?logo=tauri&logoColor=white)](https://v2.tauri.app/)
 [![Biome](https://img.shields.io/badge/lint%2Fformat-Biome-60a5fa.svg?logo=biome&logoColor=white)](https://biomejs.dev/)
 [![Requires AgentForge](https://img.shields.io/badge/requires-AgentForge%200.16.0%2B-blueviolet)](https://github.com/bulletinmybeard/agent-forge/releases/tag/v0.16.0)
+[![Code review: Claude Opus 5](https://img.shields.io/badge/code%20review-Claude%20Opus%205-D97757?logo=claude&logoColor=white)](#pre-release-code-review)
 
 Native macOS inspector for [AgentForge](https://github.com/bulletinmybeard/agent-forge) chat sessions. Pick a session (or jump to a `UUID`), then read **Overview**, **Messages**, **Audit**, and **Loki** logs (*optional). The Chat tab asks AgentForge about the snapshot over `/ws/chat`.
 
@@ -110,6 +111,14 @@ The desktop app calls:
 | WebSocket | `/ws/chat?source=debug` | Chat tab |
 
 Auth is `Authorization: Bearer <api_key>` on HTTP, and the same key as a WebSocket subprotocol when set.
+
+### Pre-release code review
+
+The changes for the current unreleased version were reviewed by **Claude Opus 5** (Anthropic), run through [Claude Code](https://claude.com/claude-code), on 2026-10-30.
+
+Scope was the diff for that release, not the whole codebase: dead code, the new tool and API surfaces, type and lint conformance, test coverage, and whether the README and CHANGELOG matched what shipped. What came out of it is in the [CHANGELOG](CHANGELOG.md).
+
+This is one review pass by one model on one diff, not an audit or a security guarantee. Findings were verified and fixed by hand before release.
 
 ## License
 

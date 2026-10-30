@@ -11,11 +11,14 @@ type Props = {
   bundle: DebugBundle;
   settings: AppSettings;
   onBack: () => void;
+  onRefresh: () => Promise<void>;
 };
 
-export function SessionView({ bundle, settings, onBack }: Props) {
+export function SessionView({ bundle, settings, onBack, onRefresh }: Props) {
   const [tab, setTab] = useState<Tab>("overview");
   const [chatSeen, setChatSeen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const session = bundle.session;
 
   function selectTab(next: Tab) {
@@ -33,6 +36,18 @@ export function SessionView({ bundle, settings, onBack }: Props) {
     }
   }
 
+  async function refresh() {
+    setRefreshing(true);
+    setRefreshError(null);
+    try {
+      await onRefresh();
+    } catch (err) {
+      setRefreshError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   return (
     <div className="session">
       <header className="chrome">
@@ -43,10 +58,14 @@ export function SessionView({ bundle, settings, onBack }: Props) {
           <strong>{session.title || "Untitled"}</strong>
           <span className="muted">{shortId(session.id, 12)}</span>
         </div>
+        <button type="button" className="btn" disabled={refreshing} onClick={() => void refresh()}>
+          {refreshing ? "Refreshing…" : "Refresh"}
+        </button>
         <button type="button" className="btn" onClick={() => void copyId()}>
           Copy UUID
         </button>
       </header>
+      {refreshError ? <p className="banner banner--error">{refreshError}</p> : null}
       <nav className="tabs">
         {(["overview", "messages", "audit", "logs", "chat"] as Tab[]).map((t) => (
           <button

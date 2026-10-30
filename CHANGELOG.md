@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-30
+
+### Added
+
+- Retrieve GitHub repository releases for the version check
+- App version check that runs once and compares if the app version is equal or behind the latest release tag version
+- shows the app version as text or together with the latest release tag that should link to the release tag detail page
+- Add `url-opener` Tauri package dependency to open the GitHub release detail page in the default browser
+
 ## [0.2.0] - 2026-09-29
 
 ### Fixed

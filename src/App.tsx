@@ -52,6 +52,14 @@ export default function App() {
     }
   }
 
+  async function refreshSession() {
+    if (!bundle) {
+      return;
+    }
+    const next = await getDebugSession(bundle.session.id);
+    setBundle(next);
+  }
+
   if (screen === "settings" && settings) {
     return (
       <SettingsView
@@ -72,6 +80,7 @@ export default function App() {
         bundle={bundle}
         settings={settings ?? { base_url: "", api_key: "" }}
         onBack={() => setScreen("picker")}
+        onRefresh={refreshSession}
       />
     );
   }
